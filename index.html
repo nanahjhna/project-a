@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>간단한 웹게임</title>
     <style>
         canvas {
@@ -8,32 +9,77 @@
             display: block;
             margin: 0 auto;
         }
+
+        body {
+            text-align: center;
+            font-family: sans-serif;
+        }
     </style>
 </head>
 <body>
+    <h1>간단한 웹게임</h1>
+    <p>점수: <span id="score">0</span></p>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <!-- 게임 스크립트 -->
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
+        const scoreEl = document.getElementById("score");
 
         let x = 200, y = 200, size = 20;
+        let speed = 10;
+        let score = 0;
+
+        // 목표 위치
+        let target = { x: Math.floor(Math.random() * 20) * 20, y: Math.floor(Math.random() * 20) * 20 };
 
         // 키 입력 처리
         document.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowUp") y -= 10;
-            if (e.key === "ArrowDown") y += 10;
-            if (e.key === "ArrowLeft") x -= 10;
-            if (e.key === "ArrowRight") x += 10;
+            if (e.key === "ArrowUp") y -= speed;
+            if (e.key === "ArrowDown") y += speed;
+            if (e.key === "ArrowLeft") x -= speed;
+            if (e.key === "ArrowRight") x += speed;
+
+            // 화면 밖으로 나가지 않도록
+            if (x < 0) x = 0;
+            if (y < 0) y = 0;
+            if (x > canvas.width - size) x = canvas.width - size;
+            if (y > canvas.height - size) y = canvas.height - size;
         });
+
+        function checkCollision() {
+            if (x === target.x && y === target.y) {
+                score++;
+                scoreEl.textContent = score;
+                // 목표 재배치
+                target.x = Math.floor(Math.random() * 20) * 20;
+                target.y = Math.floor(Math.random() * 20) * 20;
+            }
+        }
 
         // 게임 루프
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 플레이어
             ctx.fillStyle = "blue";
             ctx.fillRect(x, y, size, size);
+
+            // 목표
+            ctx.fillStyle = "red";
+            ctx.fillRect(target.x, target.y, size, size);
+
+            checkCollision();
+
             requestAnimationFrame(gameLoop);
         }
+
         gameLoop();
     </script>
+
+    <!-- 광고 스크립트 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1474045642143501" crossorigin="anonymous"></script>
+
 </body>
 </html>
