@@ -1,13 +1,39 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>간단한 웹게임</title>
+    <style>
+        canvas {
+            background: #eee;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let x = 200, y = 200, size = 20;
+
+        // 키 입력 처리
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp") y -= 10;
+            if (e.key === "ArrowDown") y += 10;
+            if (e.key === "ArrowLeft") x -= 10;
+            if (e.key === "ArrowRight") x += 10;
+        });
+
+        // 게임 루프
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "blue";
+            ctx.fillRect(x, y, size, size);
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+    </script>
+</body>
 </html>
