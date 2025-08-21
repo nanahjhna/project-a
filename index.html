@@ -7,6 +7,7 @@
     <meta charset="UTF-8">
     <title>클릭 반응 게임</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1474045642143501">
     <style>
         body {
             text-align: center;
@@ -45,8 +46,9 @@
             display: block;
             margin: 10px auto;
             cursor: pointer;
-            max-width: 95vw; /* 화면 폭에 맞게 */
-            height: auto;
+            width: 90vw; /* 화면 폭의 90% */
+            max-width: 800px; /* 최대 800px 제한 */
+            aspect-ratio: 1 / 1; /* 정사각형 유지 */
             border-radius: 10px;
         }
 
@@ -62,7 +64,7 @@
     <p>점수: <span id="score">0</span></p>
     <p>남은 시간: <span id="time">10</span>초</p>
     <button id="startBtn">게임 시작</button>
-    <canvas id="gameCanvas" width="360" height="360"></canvas>
+    <canvas id="gameCanvas"></canvas>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -71,18 +73,28 @@
         const timeEl = document.getElementById("time");
         const startBtn = document.getElementById("startBtn");
 
-        let size = 40;
         let score = 0;
         let time = 10;
         let target = null;
         let timerId = null;
         let gameActive = false;
+        let targetSize = 40; // 캔버스 크기에 따라 업데이트
+
+        // 캔버스 리사이즈 (화면 크기에 맞게 픽셀 크기 재설정)
+        function resizeCanvas() {
+            const size = Math.min(window.innerWidth * 0.9, 800); // 최대 800px
+            canvas.width = size;
+            canvas.height = size;
+            targetSize = Math.floor(canvas.width * 0.1); // 캔버스의 10% 크기
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas(); // 초기 실행
 
         // 랜덤 위치 생성
         function getRandomTarget() {
             return {
-                x: Math.floor(Math.random() * (canvas.width - size)),
-                y: Math.floor(Math.random() * (canvas.height - size))
+                x: Math.floor(Math.random() * (canvas.width - targetSize)),
+                y: Math.floor(Math.random() * (canvas.height - targetSize))
             };
         }
 
@@ -95,8 +107,8 @@
             const mouseY = e.clientY - rect.top;
 
             if (
-                mouseX >= target.x && mouseX <= target.x + size &&
-                mouseY >= target.y && mouseY <= target.y + size
+                mouseX >= target.x && mouseX <= target.x + targetSize &&
+                mouseY >= target.y && mouseY <= target.y + targetSize
             ) {
                 score++;
                 scoreEl.textContent = score;
@@ -112,6 +124,8 @@
             timeEl.textContent = time;
             target = getRandomTarget();
             gameActive = true;
+
+            if (timerId) clearInterval(timerId);
 
             // 타이머 시작
             timerId = setInterval(() => {
@@ -132,7 +146,7 @@
 
             if (target) {
                 ctx.fillStyle = "red";
-                ctx.fillRect(target.x, target.y, size, size);
+                ctx.fillRect(target.x, target.y, targetSize, targetSize);
             }
 
             requestAnimationFrame(gameLoop);
