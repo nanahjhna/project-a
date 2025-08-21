@@ -2,75 +2,104 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>간단한 웹게임</title>
+    <title>클릭 반응 게임</title>
     <style>
         canvas {
             background: #eee;
             display: block;
             margin: 0 auto;
+            cursor: pointer;
         }
 
         body {
             text-align: center;
             font-family: sans-serif;
         }
+
+        #startBtn {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
-    <h1>간단한 웹게임</h1>
+    <h1>클릭 반응 게임</h1>
     <p>점수: <span id="score">0</span></p>
+    <p>남은 시간: <span id="time">10</span>초</p>
+    <button id="startBtn">게임 시작</button>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
 
-    <!-- 게임 스크립트 -->
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         const scoreEl = document.getElementById("score");
+        const timeEl = document.getElementById("time");
+        const startBtn = document.getElementById("startBtn");
 
-        let x = 200, y = 200, size = 20;
-        let speed = 10;
+        let size = 40;
         let score = 0;
+        let time = 10;
+        let target = null;
+        let timerId = null;
+        let gameActive = false;
 
-        // 목표 위치
-        let target = { x: Math.floor(Math.random() * 20) * 20, y: Math.floor(Math.random() * 20) * 20 };
+        // 랜덤 위치 생성
+        function getRandomTarget() {
+            return {
+                x: Math.floor(Math.random() * (canvas.width - size)),
+                y: Math.floor(Math.random() * (canvas.height - size))
+            };
+        }
 
-        // 키 입력 처리
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowUp") y -= speed;
-            if (e.key === "ArrowDown") y += speed;
-            if (e.key === "ArrowLeft") x -= speed;
-            if (e.key === "ArrowRight") x += speed;
+        // 마우스 클릭 이벤트
+        canvas.addEventListener("click", (e) => {
+            if (!gameActive || !target) return;
 
-            // 화면 밖으로 나가지 않도록
-            if (x < 0) x = 0;
-            if (y < 0) y = 0;
-            if (x > canvas.width - size) x = canvas.width - size;
-            if (y > canvas.height - size) y = canvas.height - size;
-        });
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
 
-        function checkCollision() {
-            if (x === target.x && y === target.y) {
+            if (
+                mouseX >= target.x && mouseX <= target.x + size &&
+                mouseY >= target.y && mouseY <= target.y + size
+            ) {
                 score++;
                 scoreEl.textContent = score;
-                // 목표 재배치
-                target.x = Math.floor(Math.random() * 20) * 20;
-                target.y = Math.floor(Math.random() * 20) * 20;
+                target = getRandomTarget(); // 타겟 이동
             }
-        }
+        });
+
+        // 게임 시작
+        startBtn.addEventListener("click", () => {
+            score = 0;
+            time = 10;
+            scoreEl.textContent = score;
+            timeEl.textContent = time;
+            target = getRandomTarget();
+            gameActive = true;
+
+            // 타이머 시작
+            timerId = setInterval(() => {
+                time--;
+                timeEl.textContent = time;
+                if (time <= 0) {
+                    clearInterval(timerId);
+                    gameActive = false;
+                    target = null;
+                    alert(`게임 종료! 최종 점수: ${score}`);
+                }
+            }, 1000);
+        });
 
         // 게임 루프
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 플레이어
-            ctx.fillStyle = "blue";
-            ctx.fillRect(x, y, size, size);
-
-            // 목표
-            ctx.fillStyle = "red";
-            ctx.fillRect(target.x, target.y, size, size);
-
-            checkCollision();
+            if (target) {
+                ctx.fillStyle = "red";
+                ctx.fillRect(target.x, target.y, size, size);
+            }
 
             requestAnimationFrame(gameLoop);
         }
